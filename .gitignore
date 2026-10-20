@@ -1,0 +1,9 @@
+.env
+.angular/
+.idea/
+.vscode/
+node_modules/
+dist/
+target/
+build/
+.DS_Store

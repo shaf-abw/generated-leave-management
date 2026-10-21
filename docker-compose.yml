@@ -1,0 +1,39 @@
+# Local development only. All values come from .env (copy .env.example); defaults are demo-only.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-leave_management}
+      POSTGRES_USER: ${POSTGRES_USER:-leave}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+      args:
+        MAVEN_MIRROR_URL: ${MAVEN_MIRROR_URL:-https://repo.maven.apache.org/maven2}
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-leave_management}
+      DB_USER: ${POSTGRES_USER:-leave}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "${FRONTEND_PORT:-4200}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  db-data:

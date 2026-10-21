@@ -20,8 +20,18 @@ describe('History', () => {
 
   const page = {
     content: [
-      leaveRequest({ id: 1, status: 'APPROVED', decidedByName: 'Morgan Manager', decisionComment: 'Enjoy' }),
-      leaveRequest({ id: 2, status: 'REJECTED', decidedByName: 'Morgan Manager', decisionComment: 'Busy week' }),
+      leaveRequest({
+        id: 1,
+        status: 'APPROVED',
+        decidedByName: 'Morgan Manager',
+        decisionComment: 'Enjoy',
+      }),
+      leaveRequest({
+        id: 2,
+        status: 'REJECTED',
+        decidedByName: 'Morgan Manager',
+        decisionComment: 'Busy week',
+      }),
       leaveRequest({ id: 3, status: 'PENDING' }),
     ],
     page: 0,
@@ -44,6 +54,18 @@ describe('History', () => {
     expect(el.textContent).toContain('Page 1 of 2');
   });
 
+  it('hides the pager when there are no results', () => {
+    const fixture = TestBed.createComponent(History);
+    fixture.detectChanges();
+    http
+      .expectOne((r) => r.url === '/api/leave-requests/history')
+      .flush({ content: [], page: 0, size: 10, totalElements: 0, totalPages: 0 });
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.textContent).toContain('No requests match the filters.');
+    expect(el.querySelector('.pager')).toBeNull();
+  });
+
   it('applies filters and paginates', () => {
     TestBed.inject(AuthService).login('u', 'p').subscribe();
     http.expectOne('/api/auth/login').flush(MANAGER_USER);
@@ -53,7 +75,11 @@ describe('History', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('thead').textContent).toContain('Employee');
 
-    fixture.componentInstance.filters.setValue({ status: 'APPROVED', from: '2030-01-01', to: '2030-12-31' });
+    fixture.componentInstance.filters.setValue({
+      status: 'APPROVED',
+      from: '2030-01-01',
+      to: '2030-12-31',
+    });
     fixture.componentInstance.search();
     const filtered = http.expectOne((r) => r.url === '/api/leave-requests/history');
     expect(filtered.request.params.get('status')).toBe('APPROVED');

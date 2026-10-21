@@ -12,7 +12,8 @@ import { StatusBadge } from '../core/status-badge';
   template: `
     <h1>Leave history</h1>
     <form class="filters" [formGroup]="filters" (ngSubmit)="search()">
-      <label>Status
+      <label
+        >Status
         <select formControlName="status">
           <option [ngValue]="null">Any</option>
           @for (status of statuses; track status) {
@@ -33,7 +34,13 @@ import { StatusBadge } from '../core/status-badge';
           @if (auth.isManager()) {
             <th>Employee</th>
           }
-          <th>Type</th><th>From</th><th>To</th><th>Days</th><th>Status</th><th>Decided by</th><th>Comment</th>
+          <th>Type</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Days</th>
+          <th>Status</th>
+          <th>Decided by</th>
+          <th>Comment</th>
         </tr>
       </thead>
       <tbody>
@@ -51,25 +58,34 @@ import { StatusBadge } from '../core/status-badge';
             <td class="comment">{{ request.decisionComment ?? '' }}</td>
           </tr>
         } @empty {
-          <tr><td colspan="8">No requests match the filters.</td></tr>
+          <tr>
+            <td colspan="8">No requests match the filters.</td>
+          </tr>
         }
       </tbody>
     </table>
     @if (page(); as p) {
-      <div class="pager">
-        <button type="button" class="secondary" [disabled]="p.page === 0" (click)="goTo(p.page - 1)">
-          Previous
-        </button>
-        <span>Page {{ p.totalPages === 0 ? 0 : p.page + 1 }} of {{ p.totalPages }}</span>
-        <button
-          type="button"
-          class="secondary"
-          [disabled]="p.page + 1 >= p.totalPages"
-          (click)="goTo(p.page + 1)"
-        >
-          Next
-        </button>
-      </div>
+      @if (p.totalPages > 0) {
+        <div class="pager">
+          <button
+            type="button"
+            class="secondary"
+            [disabled]="p.page === 0"
+            (click)="goTo(p.page - 1)"
+          >
+            Previous
+          </button>
+          <span>Page {{ p.page + 1 }} of {{ p.totalPages }}</span>
+          <button
+            type="button"
+            class="secondary"
+            [disabled]="p.page + 1 >= p.totalPages"
+            (click)="goTo(p.page + 1)"
+          >
+            Next
+          </button>
+        </div>
+      }
     }
   `,
 })
